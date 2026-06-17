@@ -1,65 +1,194 @@
+import Link from "next/link";
 import Image from "next/image";
+import { getLatestPosts } from "@/lib/content";
+import { isAdminMode } from "@/lib/admin";
+import { format } from "date-fns";
+import HeroText from "@/components/HeroText";
 
-export default function Home() {
+const RESEARCH_AREAS = [
+  {
+    label: "Bioelectricity",
+    description:
+      "Electrical fields in tissues as the medium through which cells encode body plans, coordinate behavior, and store morphogenetic memory.",
+  },
+  {
+    label: "Basal Cognition",
+    description:
+      "Goal-directed, adaptive behavior in non-neural systems — how single cells sense, decide, and remember without a brain.",
+  },
+  {
+    label: "Collective Intelligence",
+    description:
+      "How populations of cells and organisms self-organize into coherent wholes without central control or explicit instruction.",
+  },
+  {
+    label: "Morphogenetic Fields",
+    description:
+      "Field-based information structures that guide developmental form — the geometry of life beyond the gene.",
+  },
+  {
+    label: "Consciousness",
+    description:
+      "The hard problem and its biological substrate. What is the minimal physical system capable of subjective experience?",
+  },
+  {
+    label: "Cellular Programming",
+    description:
+      "Writing to the software of living systems — optogenetics, synthetic biology, and the frontier of programmable organisms.",
+  },
+];
+
+export default async function Home() {
+  const adminMode = await isAdminMode();
+  const posts = getLatestPosts(4, adminMode);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <>
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
+        <HeroText />
+      </section>
+
+      {/* Nature image band */}
+      <div className="relative w-full overflow-hidden" style={{ height: 420 }}>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=85"
+          alt="Forest — nature research"
+          fill
+          className="object-cover"
           priority
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.18) 0%, rgba(13,27,94,0.55) 100%)",
+          }}
+        />
+        <div className="absolute bottom-0 left-0 right-0 max-w-6xl mx-auto px-6 pb-10">
+          <p
+            className="text-sm italic max-w-md leading-relaxed"
+            style={{ color: "rgba(255,255,255,0.82)" }}
+          >
+            "The minimal unit of cognition may not be the neuron — it may be
+            the cell itself, navigating a problem space we have only begun to map."
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto px-6 mt-16">
+        <div className="border-t" style={{ borderColor: "var(--border)" }} />
+      </div>
+
+      {/* Latest Posts */}
+      {posts.length > 0 && (
+        <section className="max-w-6xl mx-auto px-6 py-16">
+          <div className="flex items-baseline justify-between mb-10">
+            <h2
+              className="text-xs font-semibold tracking-widest uppercase"
+              style={{ color: "var(--navy)" }}
+            >
+              Recent Activity
+            </h2>
+            <Link
+              href="/logs"
+              className="text-xs underline underline-offset-4 transition-opacity hover:opacity-60"
+              style={{ color: "var(--navy)" }}
+            >
+              All logs →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {posts.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/${post.isReport ? "reports" : "logs"}/${post.slug}`}
+                className="group block p-6 rounded-xl border transition-all hover:shadow-sm hover:border-gray-300"
+                style={{
+                  borderColor: "var(--border)",
+                  background: "#fff",
+                  opacity: post.hidden ? 0.5 : 1,
+                }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  {post.isReport && (
+                    <span
+                      className="text-[10px] font-semibold tracking-widest uppercase px-2 py-0.5 rounded"
+                      style={{ background: "var(--navy)", color: "#fff" }}
+                    >
+                      Report
+                    </span>
+                  )}
+                  {post.hidden && adminMode && (
+                    <span
+                      className="text-[10px] font-semibold tracking-widest uppercase px-2 py-0.5 rounded"
+                      style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626" }}
+                    >
+                      Hidden
+                    </span>
+                  )}
+                  <span className="text-xs" style={{ color: "var(--muted)" }}>
+                    {post.date ? format(new Date(post.date), "MMM d, yyyy") : ""}
+                  </span>
+                </div>
+                <h3
+                  className="font-semibold mb-2 group-hover:underline underline-offset-2 leading-snug"
+                  style={{ color: "var(--navy)" }}
+                >
+                  {post.title}
+                </h3>
+                <p className="text-sm leading-relaxed line-clamp-3" style={{ color: "#6B7280" }}>
+                  {post.excerpt}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="border-t" style={{ borderColor: "var(--border)" }} />
+      </div>
+
+      {/* Research Areas */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+        <h2
+          className="text-xs font-semibold tracking-widest uppercase mb-10"
+          style={{ color: "var(--navy)" }}
+        >
+          Research Areas
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {RESEARCH_AREAS.map((area) => (
+            <div key={area.label}>
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="w-1 h-4 rounded-full flex-shrink-0"
+                  style={{ background: "var(--accent)" }}
+                />
+                <h3 className="font-semibold text-sm" style={{ color: "var(--navy)" }}>
+                  {area.label}
+                </h3>
+              </div>
+              <p className="text-sm leading-relaxed pl-3" style={{ color: "#4B5563" }}>
+                {area.description}
+              </p>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+        <div className="mt-10">
+          <Link
+            href="/about"
+            className="text-sm underline underline-offset-4 transition-opacity hover:opacity-60"
+            style={{ color: "var(--navy)" }}
+          >
+            Learn more about our focus →
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }
